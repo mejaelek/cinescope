@@ -1,0 +1,392 @@
+/* ============================================================
+   CineScope — animations.css
+   All keyframes & animation classes
+   ============================================================ */
+
+/* ── Keyframes ──────────────────────────────────────────── */
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes card-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes modal-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes hero-zoom {
+    from {
+        transform: scale(1.06);
+    }
+
+    to {
+        transform: scale(1.12);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(6px);
+    }
+}
+
+@keyframes spin-slow {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes skeleton-pulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -400px 0;
+    }
+
+    100% {
+        background-position: 400px 0;
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+@keyframes progress-bar {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes star-pop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.4);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ── Utility Animation Classes ──────────────────────────── */
+
+.animate-fade-in {
+    animation: fade-in 0.5s ease both;
+}
+
+.animate-fade-up {
+    animation: fade-up 0.5s ease both;
+}
+
+/* Staggered card delays */
+.movie-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.movie-card:nth-child(2) {
+    animation-delay: 0.10s;
+}
+
+.movie-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.movie-card:nth-child(4) {
+    animation-delay: 0.20s;
+}
+
+.movie-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.movie-card:nth-child(6) {
+    animation-delay: 0.30s;
+}
+
+.movie-card:nth-child(7) {
+    animation-delay: 0.35s;
+}
+
+.movie-card:nth-child(8) {
+    animation-delay: 0.40s;
+}
+
+.movie-card:nth-child(9) {
+    animation-delay: 0.45s;
+}
+
+.movie-card:nth-child(10) {
+    animation-delay: 0.50s;
+}
+
+.movie-card:nth-child(11) {
+    animation-delay: 0.55s;
+}
+
+.movie-card:nth-child(12) {
+    animation-delay: 0.60s;
+}
+
+/* Shimmer loading effect for skeletons */
+.skeleton-card {
+    background: linear-gradient(90deg,
+            var(--clr-surface) 0%,
+            var(--clr-surface2) 50%,
+            var(--clr-surface) 100%);
+    background-size: 400px 100%;
+    animation: shimmer 1.6s infinite;
+}
+
+/* Rating star animation */
+.rating-star-anim {
+    animation: star-pop 0.3s ease;
+}
+
+/* Hover ripple on primary button */
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    transform: scale(0);
+    top: 50%;
+    left: 50%;
+    margin: -30px 0 0 -30px;
+    pointer-events: none;
+}
+
+.btn-primary:active::after {
+    animation: ripple 0.5s ease;
+}
+
+/* ── CSS Transitions for Interactivity ──────────────────── */
+
+/* Filter chip active transition */
+.filter-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--clr-accent);
+    border-radius: inherit;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+    z-index: -1;
+}
+
+.filter-btn.active::before {
+    transform: scaleX(1);
+}
+
+/* Card hover lift with color glow */
+.movie-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--clr-accent) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.movie-card:hover::before {
+    opacity: 0.06;
+}
+
+/* Search input expand on focus */
+.search-input {
+    transform-origin: left;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Smooth hero title entrance */
+#hero-title {
+    animation: fade-up 0.7s 0.2s both;
+}
+
+#hero-synopsis {
+    animation: fade-up 0.7s 0.35s both;
+}
+
+#hero-meta {
+    animation: fade-up 0.7s 0.5s both;
+}
+
+.hero-actions {
+    animation: fade-up 0.7s 0.65s both;
+}
+
+/* Page header entrance */
+.page-title {
+    animation: fade-up 0.5s 0.1s both;
+}
+
+.page-subtitle {
+    animation: fade-up 0.5s 0.2s both;
+}
+
+.stats-bar {
+    animation: fade-up 0.5s 0.3s both;
+}
+
+/* Strip card hover */
+.strip-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(230, 57, 70, 0.3) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.strip-card:hover::after {
+    opacity: 1;
+}
+
+/* Watchlist heart pulse when saved */
+@keyframes heart-pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    30% {
+        transform: scale(1.4);
+    }
+
+    60% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.card-watchlist-btn.saved {
+    animation: heart-pulse 0.4s ease;
+}
+
+/* Logo icon continuous rotation */
+.logo-icon {
+    display: inline-block;
+    animation: spin-slow 10s linear infinite;
+}
+
+/* Scroll into view reveal */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Progress bar on load */
+.load-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--clr-accent), var(--clr-accent2));
+    z-index: 999;
+    transition: width 0.3s ease;
+    border-radius: 0 2px 2px 0;
+}
+
+/* ── Reduced Motion ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
