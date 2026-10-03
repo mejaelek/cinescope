@@ -1,6 +1,6 @@
 // ============================================================
 // CineScope — js/search.js
-// Search page: live search with debounce, recent searches,
+// Search page:current live search with debounce, recent searches,
 // result rendering, OMDb enrichment.
 // ============================================================
 
