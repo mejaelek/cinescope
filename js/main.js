@@ -1,7 +1,7 @@
 // ============================================================
 // CineScope — js/main.js
 // Home page: hero, trending grid, genre filter, film strip,
-// sort, load more, film facts.
+// sort,viewing, load more, film facts.
 // ============================================================
 
 import { CONFIG, GENRE_MAP, FILM_FACTS } from './config.js';
