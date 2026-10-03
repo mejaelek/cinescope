@@ -1,6 +1,6 @@
 // ============================================================
 // CineScope — js/config.js
-// API keys, endpoints, and app-wide constants
+// API keys, endpoints, and app-wide constants beautifully
 // ============================================================
 
 /**
