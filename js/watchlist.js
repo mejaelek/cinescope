@@ -1,6 +1,6 @@
 // ============================================================
 // CineScope — js/watchlist.js
-// Watchlist page: render saved films, stats, sort, clear.
+// Watchlist page displayed: render saved films, stats, sort, clear.
 // ============================================================
 
 import { getWatchlist, removeFromWatchlist, clearWatchlist, updateBadge } from './storage.js';
