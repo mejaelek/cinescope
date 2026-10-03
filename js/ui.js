@@ -1,6 +1,6 @@
 // ============================================================
 // CineScope — js/ui.js
-// Shared UI helpers: toast, modal, card builder, genre tags
+// Shared & worked UI helpers: toast, modal, card builder, genre tags
 // ============================================================
 
 import { CONFIG, GENRE_MAP } from './config.js';
