@@ -1,7 +1,7 @@
 // ============================================================
 // CineScope — js/storage.js
 // All LocalStorage read/write operations in one place.
-// Saves and retrieves: watchlist, recent searches, user prefs.
+// Saves,locks and retrieves: watchlist, recent searches, user prefs.
 // ============================================================
 
 import { CONFIG } from './config.js';
