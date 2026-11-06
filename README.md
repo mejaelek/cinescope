@@ -1,7 +1,7 @@
 # CineScope — Film Discovery Web Application
 
 **Author:** Kamohelo G. Mejaele
-**Course:** WO 4 CSE 310 — Applied Programming(Module #2)
+**Course:** WO 2 CSE 499 — Senior Project
 
 CineScope is a fully responsive film discovery web application built with vanilla HTML, CSS, and JavaScript (no frameworks or libraries). It combines data from two third-party APIs to give users a rich, data-driven cinema experience: browse trending films, search live, view detailed film information with ratings from multiple sources, and keep a personal watchlist that survives page refreshes.
 
@@ -41,7 +41,7 @@ I built CineScope to deepen my skills in developing and debugging HTML, CSS, and
 - JavaScript (ES Modules, Fetch API, async/await, array methods, event delegation, IntersectionObserver)
 - LocalStorage (serialised JSON)
 - TMDB API and OMDb API
-- GitHub Pages (hosting), Trello (project planning), browser DevTools and ESLint (debugging)
+- GitHub Pages (hosting), browser DevTools and ESLint (debugging)
 
 ## APIs
 
