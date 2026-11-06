@@ -1,7 +1,7 @@
 // ============================================================
 // CineScope — js/search.js
 // Search page:current live search with debounce, recent searches,
-// result rendering, OMDb enrichment.
+// result rendering, OMDb enrichment & appealing.
 // ============================================================
 
 import { searchMovies } from './api.js';
