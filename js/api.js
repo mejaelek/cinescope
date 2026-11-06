@@ -1,7 +1,7 @@
 // ============================================================
 // CineScope — js/api.js
 // Centralized API service for TMDB and OMDb
-// All effective fetch calls, error handling, and data shaping live here
+// All effective fetch calls, error handling, and data construction live here
 // ============================================================
 
 import { CONFIG } from './config.js';
