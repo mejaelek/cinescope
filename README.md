@@ -124,3 +124,6 @@ cinescope/
 ## Acknowledgements
 
 Film data provided by [TMDB](https://www.themoviedb.org/) and [OMDb](https://www.omdbapi.com/). This product uses the TMDB API but is not endorsed or certified by TMDB.
+Team Favorite Quotes
+
+"Coming together is a beginning; keeping together is progress; working together is success." (Henry Ford), added by Kamohelo Godfrey Mejaele
