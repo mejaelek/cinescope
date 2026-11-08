@@ -129,3 +129,5 @@ Film data provided by [TMDB](https://www.themoviedb.org/) and [OMDb](https://www
 "Coming together is a beginning; keeping together is progress; working together is success." (Henry Ford), added by Kamohelo Godfrey Mejaele
 
 “I teach them correct principles and they govern themselves.” (Joseph Smith), added by Fernando Caballero.
+
+“It always seems impossible until it’s done.” (Nelson Mandela), added by Pius Mukisa.
