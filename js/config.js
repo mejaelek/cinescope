@@ -13,7 +13,7 @@
 export const CONFIG = {
     // ── TMDB (The Movie Database) ─────────────────────────────
     // API docs: https://developer.themoviedb.org/docs
-    TMDB_KEY: '10fba6cea0786646a013dabf4ff91092',   // ← replace with real key
+    TMDB_KEY: 'b92c4d81690074c0d03d61aa23a93a44',   // ← replace with real key
     TMDB_BASE: 'https://api.themoviedb.org/3',
     TMDB_IMG_BASE: 'https://image.tmdb.org/t/p',
     TMDB_POSTER_W: 'w342',
@@ -22,7 +22,7 @@ export const CONFIG = {
 
     // ── OMDb (Open Movie Database) ────────────────────────────
     // API docs: https://www.omdbapi.com
-    OMDB_KEY: '3a4ca5c1',   // ← replace with real key
+    OMDB_KEY: '1f6f3d53',   // ← replace with real key
     OMDB_BASE: 'https://www.omdbapi.com',
 
     // ── LocalStorage Keys ─────────────────────────────────────

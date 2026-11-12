@@ -2,6 +2,8 @@
 // CineScope — js/watchlist.js
 // Watchlist page displayed orderly: render saved films, stats, sort, clear.
 // ============================================================
+import { initGoogleAuth, loginWithGoogle, logoutGoogle, isGoogleSignedIn } from './googleDrive.js?v=4';
+import { syncFromDriveOnLogin } from './storage.js';
 
 import { getWatchlist, removeFromWatchlist, clearWatchlist, updateBadge } from './storage.js';
 import { renderCards, showToast, openMovieModal } from './ui.js';
@@ -19,6 +21,52 @@ const statTopGenre = document.getElementById('stat-top-genre');
 const hamburger = document.getElementById('hamburger');
 const mainNav = document.getElementById('main-nav');
 const siteHeader = document.getElementById('site-header');
+const googleBtn = document.getElementById('google-login-btn');
+const googleText = document.getElementById('google-login-text');
+
+function updateGoogleButtonState() {
+    if (isGoogleSignedIn()) {
+        googleText.textContent = 'Drive Connected';
+        googleBtn.classList.add('connected');
+    } else {
+        googleText.textContent = 'Sign In with Google';
+        googleBtn.classList.remove('connected');
+    }
+}
+googleBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isGoogleSignedIn()) {
+        if (confirm('Disconnect Google Drive sync?')) {
+            logoutGoogle();
+        }
+    } else {
+        loginWithGoogle();
+    }
+});
+// Initialize Google Auth immediately so tokenClient is ready before any user click
+initGoogleAuth(
+    async () => {
+        showToast('Connected to Google Drive', 'success');
+        updateGoogleButtonState();
+        await syncFromDriveOnLogin();
+        render();
+    },
+    (err) => {
+        if (err.type === 'popup_closed') {
+            showToast('Sign-in cancelled or interrupted. Click again to complete.', 'info');
+        } else if (err.type === 'popup_failed_to_open') {
+            showToast('Pop-up was blocked by your browser. Please allow popups.', 'error');
+        }
+    }
+);
+updateGoogleButtonState();
+
+window.addEventListener('load', async () => {
+    if (isGoogleSignedIn()) {
+        await syncFromDriveOnLogin();
+        render();
+    }
+});
 
 // ── Render ───────────────────────────────────────────────────
 

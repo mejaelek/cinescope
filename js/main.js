@@ -3,11 +3,14 @@
 // Home page: hero, trending grid, genre filter, film strip,
 // sort,viewing, load more, movie facts.
 // ============================================================
+import { initGoogleAuth, loginWithGoogle, logoutGoogle, isGoogleSignedIn } from './googleDrive.js?v=4';
+import { syncFromDriveOnLogin } from './storage.js';
 
 import { CONFIG, GENRE_MAP, FILM_FACTS } from './config.js';
 import { getTrending, getNowPlaying, getGenres, discoverByGenre, backdropUrl, posterUrl } from './api.js';
 import { renderCards, showToast, openMovieModal, initScrollReveal } from './ui.js';
 import { toggleWatchlist, isInWatchlist, updateBadge } from './storage.js';
+
 
 // ── State ────────────────────────────────────────────────────
 const state = {
@@ -31,6 +34,50 @@ const refreshQuote = document.getElementById('refresh-quote');
 const hamburger = document.getElementById('hamburger');
 const mainNav = document.getElementById('main-nav');
 const siteHeader = document.getElementById('site-header');
+const googleBtn = document.getElementById('google-login-btn');
+const googleText = document.getElementById('google-login-text');
+
+function updateGoogleButtonState() {
+    if (isGoogleSignedIn()) {
+        googleText.textContent = 'Drive Connected';
+        googleBtn.classList.add('connected');
+    } else {
+        googleText.textContent = 'Sign In with Google';
+        googleBtn.classList.remove('connected');
+    }
+}
+googleBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isGoogleSignedIn()) {
+        if (confirm('Disconnect Google Drive sync?')) {
+            logoutGoogle();
+        }
+    } else {
+        loginWithGoogle();
+    }
+});
+// Initialize Google Auth immediately so tokenClient is ready before any user click
+initGoogleAuth(
+    async () => {
+        showToast('Connected to Google Drive', 'success');
+        updateGoogleButtonState();
+        await syncFromDriveOnLogin();
+    },
+    (err) => {
+        if (err.type === 'popup_closed') {
+            showToast('Sign-in cancelled or interrupted. Click again to complete.', 'info');
+        } else if (err.type === 'popup_failed_to_open') {
+            showToast('Pop-up was blocked by your browser. Please allow popups.', 'error');
+        }
+    }
+);
+updateGoogleButtonState();
+
+window.addEventListener('load', async () => {
+    if (isGoogleSignedIn()) {
+        await syncFromDriveOnLogin();
+    }
+});
 
 // ── Initialization ───────────────────────────────────────────
 async function init() {

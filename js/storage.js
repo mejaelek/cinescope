@@ -5,6 +5,78 @@
 // ============================================================
 
 import { CONFIG } from './config.js';
+import { loadFromDrive, saveToDrive, isGoogleSignedIn } from './googleDrive.js?v=4';
+
+let syncDebounceTimer = null;
+
+/**
+ * Perform immediate synchronization with Google Drive
+ */
+export async function syncToDriveNow() {
+    if (!isGoogleSignedIn()) return;
+    clearTimeout(syncDebounceTimer);
+
+    let prefs = {};
+    try {
+        const rawPrefs = localStorage.getItem(CONFIG.LS_PREFS);
+        if (rawPrefs) prefs = JSON.parse(rawPrefs);
+    } catch (e) {}
+
+    const payload = {
+        watchlist: getWatchlist(),
+        recentSearches: getRecentSearches(),
+        preferences: prefs,
+        lastSyncedAt: Date.now(),
+    };
+
+    try {
+        await saveToDrive(payload);
+        console.log('✅ Synchronized with Google Drive');
+    } catch (err) {
+        console.error('❌ Cloud sync failed:', err);
+    }
+}
+
+/**
+ * Trigger debounced background sync to Google Drive
+ */
+function triggerCloudSync() {
+    if (!isGoogleSignedIn()) return;
+    clearTimeout(syncDebounceTimer);
+    syncDebounceTimer = setTimeout(syncToDriveNow, 800);
+}
+
+/**
+ * Merge Cloud data into local state upon user login
+ */
+export async function syncFromDriveOnLogin() {
+    if (!isGoogleSignedIn()) return;
+    try {
+        console.log('⏳ Checking Google Drive for existing data...');
+        const cloudData = await loadFromDrive();
+        if (!cloudData) {
+            console.log('ℹ️ No existing file in Google Drive. Creating initial file with local watchlist...');
+            await syncToDriveNow();
+            return;
+        }
+
+        console.log('📥 Downloaded data from Google Drive:', cloudData);
+        // Merge watchlists (Cloud + Local union by ID)
+        const localList = getWatchlist();
+        const mergedMap = new Map();
+        (cloudData.watchlist || []).forEach((m) => mergedMap.set(m.id, m));
+        localList.forEach((m) => mergedMap.set(m.id, m)); // Local takes precedence if newer
+        const mergedList = Array.from(mergedMap.values());
+
+        try {
+            localStorage.setItem(CONFIG.LS_WATCHLIST, JSON.stringify(mergedList));
+        } catch (e) {}
+        updateBadge();
+        await syncToDriveNow();
+    } catch (err) {
+        console.error('❌ Failed to sync from Drive:', err);
+    }
+}
 
 // ── Watchlist ────────────────────────────────────────────────
 
@@ -26,8 +98,14 @@ export function getWatchlist() {
  * @param {Array} list
  */
 function saveWatchlist(list) {
-    localStorage.setItem(CONFIG.LS_WATCHLIST, JSON.stringify(list));
+    try {
+        localStorage.setItem(CONFIG.LS_WATCHLIST, JSON.stringify(list));
+    } catch (e) {
+        console.warn('localStorage is restricted in this window:', e);
+    }
+    triggerCloudSync(); // Automatically syncs to Google Drive
 }
+
 
 /**
  * Add a movie to the watchlist (if not already present).
@@ -37,7 +115,7 @@ function saveWatchlist(list) {
  */
 export function addToWatchlist(movie) {
     const list = getWatchlist();
-    if (list.find((m) => m.id === movie.id)) return false; // already saved
+    if (list.find((m) => m.id === movie.id)) return false;
     list.unshift({ ...movie, _addedAt: Date.now() });
     saveWatchlist(list);
     updateBadge();
@@ -83,6 +161,7 @@ export function isInWatchlist(movieId) {
 export function clearWatchlist() {
     localStorage.removeItem(CONFIG.LS_WATCHLIST);
     updateBadge();
+    triggerCloudSync();
 }
 
 // ── Recent Searches ──────────────────────────────────────────

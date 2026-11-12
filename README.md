@@ -84,11 +84,13 @@ cinescope/
    ```
 2. Get free API keys from [TMDB](https://www.themoviedb.org/settings/api) and [OMDb](https://www.omdbapi.com/apikey.aspx).
 3. Open `js/config.js` and add your keys.
-4. Because the project uses ES Modules, serve it through a local web server rather than opening the file directly:
+4. Because the project uses ES Modules and Google Identity OAuth popups, serve it with `Cross-Origin-Opener-Policy: same-origin-allow-popups` enabled:
    ```bash
-   python -m http.server 8000
+   python server.py
+   # or: node server.js
+   # or: python -m http.server 8000
    ```
-   Then visit `http://localhost:8000`. (The VS Code **Live Server** extension also works.)
+   Then visit `http://localhost:8000`. (The VS Code **Live Server** extension also automatically uses the header configured in `.vscode/settings.json`.)
 
 ## Development Environment
 
