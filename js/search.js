@@ -3,6 +3,8 @@
 // Search page:current live search with debounce, recent searches,
 // result rendering, OMDb enrichment & appealing.
 // ============================================================
+import { initGoogleAuth, loginWithGoogle, logoutGoogle, isGoogleSignedIn } from './googleDrive.js?v=4';
+import { syncFromDriveOnLogin } from './storage.js';
 
 import { searchMovies } from './api.js';
 import { renderCards, showToast, openMovieModal } from './ui.js';
@@ -20,10 +22,54 @@ const recentEl = document.getElementById('recent-searches');
 const hamburger = document.getElementById('hamburger');
 const mainNav = document.getElementById('main-nav');
 const siteHeader = document.getElementById('site-header');
+const googleBtn = document.getElementById('google-login-btn');
+const googleText = document.getElementById('google-login-text');
 
 // ── State ────────────────────────────────────────────────────
 let debounceTimer = null;
 let currentQuery = '';
+
+function updateGoogleButtonState() {
+    if (isGoogleSignedIn()) {
+        googleText.textContent = 'Drive Connected';
+        googleBtn.classList.add('connected');
+    } else {
+        googleText.textContent = 'Sign In with Google';
+        googleBtn.classList.remove('connected');
+    }
+}
+googleBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isGoogleSignedIn()) {
+        if (confirm('Disconnect Google Drive sync?')) {
+            logoutGoogle();
+        }
+    } else {
+        loginWithGoogle();
+    }
+});
+// Initialize Google Auth immediately so tokenClient is ready before any user click
+initGoogleAuth(
+    async () => {
+        showToast('Connected to Google Drive', 'success');
+        updateGoogleButtonState();
+        await syncFromDriveOnLogin();
+    },
+    (err) => {
+        if (err.type === 'popup_closed') {
+            showToast('Sign-in cancelled or interrupted. Click again to complete.', 'info');
+        } else if (err.type === 'popup_failed_to_open') {
+            showToast('Pop-up was blocked by your browser. Please allow popups.', 'error');
+        }
+    }
+);
+updateGoogleButtonState();
+
+window.addEventListener('load', async () => {
+    if (isGoogleSignedIn()) {
+        await syncFromDriveOnLogin();
+    }
+});
 
 // ── Search ───────────────────────────────────────────────────
 

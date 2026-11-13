@@ -226,6 +226,99 @@ select {
     transform: translateY(-7px) rotate(-45deg);
 }
 
+/* ── Header Actions & Google Drive Login Button ────────── */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.nav-btn-google {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 18px;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #111827;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+    user-select: none;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+    position: relative;
+    z-index: 10;
+}
+
+.nav-btn-google .google-drive-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 16px;
+    transition: transform 0.25s ease;
+}
+
+.nav-btn-google:hover {
+    background: #f3f4f6;
+    color: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.nav-btn-google:hover .google-drive-icon {
+    transform: scale(1.1);
+}
+
+.nav-btn-google:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.nav-btn-google:focus-visible {
+    outline: 2px solid #2684fc;
+    outline-offset: 3px;
+}
+
+/* Connected State */
+.nav-btn-google.connected {
+    background: #064e3b;
+    border-color: #10b981;
+    color: #ecfdf5;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.25);
+}
+
+.nav-btn-google.connected::after {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #34d399;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #34d399;
+    animation: pulse-sync 2.2s ease-in-out infinite;
+    margin-left: 2px;
+}
+
+.nav-btn-google.connected:hover {
+    background: #047857;
+    border-color: #34d399;
+    color: #ffffff;
+    box-shadow: 0 4px 18px rgba(16, 185, 129, 0.4);
+}
+
+@keyframes pulse-sync {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.95;
+    }
+    50% {
+        transform: scale(1.35);
+        opacity: 0.4;
+    }
+}
+
 /* ── Hero ───────────────────────────────────────────────── */
 .hero {
     position: relative;
@@ -1191,6 +1284,16 @@ select {
 
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 768px) {
+    .header-actions {
+        gap: 10px;
+    }
+
+    .nav-btn-google {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        gap: 7px;
+    }
+
     .main-nav {
         position: fixed;
         top: var(--header-h);

@@ -1,0 +1,12 @@
+{
+    "liveServer.settings.headers": {
+        "Cross-Origin-Opener-Policy": "same-origin-allow-popups"
+    },
+    "livePreview.customHeaders": [
+        {
+            "name": "Cross-Origin-Opener-Policy",
+            "value": "same-origin-allow-popups"
+        }
+    ]
+}
+
