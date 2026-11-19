@@ -309,10 +309,13 @@ select {
 }
 
 @keyframes pulse-sync {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         opacity: 0.95;
     }
+
     50% {
         transform: scale(1.35);
         opacity: 0.4;
@@ -502,6 +505,28 @@ select {
 
 .btn-text:hover {
     opacity: 0.7;
+}
+
+/* ── WhatsApp Share Button ─────────────────────────────── */
+.btn-whatsapp {
+    background-color: #25D366;
+    color: #ffffff;
+    border: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.btn-whatsapp:hover {
+    background-color: #1ebd5b;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-whatsapp:active {
+    transform: translateY(0);
 }
 
 /* ── Section Headers ────────────────────────────────────── */

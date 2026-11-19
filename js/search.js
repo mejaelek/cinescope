@@ -203,4 +203,10 @@ const urlQuery = urlParams.get('q');
 if (urlQuery) {
     searchInput.value = urlQuery;
     doSearch(urlQuery);
+}
+
+// Pre-open shared film from URL if present: ?movie=123
+const urlMovieId = urlParams.get('movie');
+if (urlMovieId) {
+    openMovieModal(Number(urlMovieId));
 } 

@@ -119,6 +119,13 @@ async function init() {
     </p>`;
         console.error('Init error:', err);
     }
+
+    // ── Deep-Link Auto Open ──────────────────────────────────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedMovieId = urlParams.get('movie');
+    if (sharedMovieId) {
+        openMovieModal(Number(sharedMovieId));
+    }
 }
 
 // ── Hero Banner ──────────────────────────────────────────────

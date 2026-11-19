@@ -23,6 +23,7 @@ const mainNav = document.getElementById('main-nav');
 const siteHeader = document.getElementById('site-header');
 const googleBtn = document.getElementById('google-login-btn');
 const googleText = document.getElementById('google-login-text');
+const shareBtn = document.getElementById('share-watchlist-btn');
 
 function updateGoogleButtonState() {
     if (isGoogleSignedIn()) {
@@ -169,6 +170,46 @@ clearBtn?.addEventListener('click', () => {
     }
 });
 
+shareBtn?.addEventListener('click', async () => {
+    const list = getWatchlist();
+
+    if (!list || list.length === 0) {
+        showToast('Your watchlist is empty!', 'info');
+        return;
+    }
+
+    // Format top 15 movies (keeps URL length safe for WhatsApp)
+    const formattedFilms = list.slice(0, 15).map((m, i) => {
+        const year = m.release_date ? ` (${m.release_date.slice(0, 4)})` : '';
+        const rating = m.vote_average ? ` — ⭐ ${m.vote_average.toFixed(1)}` : '';
+        return `${i + 1}. *${m.title}*${year}${rating}`;
+    }).join('\n');
+
+    const extraCount = list.length > 15 ? `\n_...and ${list.length - 15} more films._` : '';
+
+    const message =
+        `🎬 *My CineScope Watchlist* (${list.length} films):
+
+${formattedFilms}${extraCount}
+
+Explore on CineScope: ${window.location.origin}`;
+
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        try {
+            await navigator.share({
+                title: 'My CineScope Watchlist',
+                text: message,
+            });
+            return;
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+        }
+    }
+
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+});
+
 // Header scroll
 window.addEventListener('scroll', () => {
     siteHeader?.classList.toggle('scrolled', window.scrollY > 60);
@@ -182,4 +223,11 @@ hamburger?.addEventListener('click', () => {
 });
 
 // ── Boot ─────────────────────────────────────────────────────
-render(); 
+render();
+
+// Pre-open shared film from URL if present: ?movie=123
+const urlParams = new URLSearchParams(window.location.search);
+const sharedMovieId = urlParams.get('movie');
+if (sharedMovieId) {
+    openMovieModal(Number(sharedMovieId));
+} 
