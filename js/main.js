@@ -10,6 +10,7 @@ import { CONFIG, GENRE_MAP, FILM_FACTS } from './config.js';
 import { getTrending, getNowPlaying, getGenres, discoverByGenre, backdropUrl, posterUrl } from './api.js';
 import { renderCards, showToast, openMovieModal, initScrollReveal } from './ui.js';
 import { toggleWatchlist, isInWatchlist, updateBadge } from './storage.js';
+import { getPersonalizedRecommendations } from './recommendations.js';
 
 
 // ── State ────────────────────────────────────────────────────
@@ -62,6 +63,7 @@ initGoogleAuth(
         showToast('Connected to Google Drive', 'success');
         updateGoogleButtonState();
         await syncFromDriveOnLogin();
+        await loadRecommendations();
     },
     (err) => {
         if (err.type === 'popup_closed') {
@@ -76,6 +78,19 @@ updateGoogleButtonState();
 window.addEventListener('load', async () => {
     if (isGoogleSignedIn()) {
         await syncFromDriveOnLogin();
+        await loadRecommendations();
+    }
+});
+
+// Reactively reload recommendations whenever watchlist changes
+window.addEventListener('cinescope:watchlist-updated', () => {
+    loadRecommendations();
+});
+
+window.addEventListener('storage', (e) => {
+    if (e.key === CONFIG.LS_WATCHLIST) {
+        updateBadge();
+        loadRecommendations();
     }
 });
 
@@ -112,12 +127,60 @@ async function init() {
         // Render film strip (now playing)
         renderFilmStrip(nowData.results || []);
 
+        // Render personalized recommendations based on watchlist
+        await loadRecommendations();
+
     } catch (err) {
         movieGrid.innerHTML = `<p style="color:var(--clr-muted);grid-column:1/-1;padding:32px 0">
       Could not load films. Please check your API keys in js/config.js.<br/>
       <small>${err.message}</small>
     </p>`;
         console.error('Init error:', err);
+    }
+
+    // ── Deep-Link Auto Open ──────────────────────────────────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedMovieId = urlParams.get('movie');
+    if (sharedMovieId) {
+        openMovieModal(Number(sharedMovieId));
+    }
+}
+
+// ── Personalized Recommendations ─────────────────────────────
+let recsLoading = false;
+
+async function loadRecommendations() {
+    const recSection = document.getElementById('recommendations-section');
+    const recGrid = document.getElementById('recommendations-grid');
+    const recSubtitle = document.getElementById('recommendations-subtitle');
+    if (!recSection || !recGrid) return;
+
+    if (recsLoading) return;
+    recsLoading = true;
+
+    try {
+        const result = await getPersonalizedRecommendations(8);
+
+        if (!result.movies || result.movies.length === 0) {
+            recSection.hidden = true;
+            recGrid.innerHTML = '';
+            return;
+        }
+
+        // Show section and update dynamic subtitle
+        recSection.hidden = false;
+        if (recSubtitle && result.basedOn && result.basedOn.length > 0) {
+            recSubtitle.textContent = `Based on your interest in ${result.basedOn.join(' & ')}`;
+        } else if (recSubtitle) {
+            recSubtitle.textContent = 'Based on films in your watchlist';
+        }
+
+        renderCards(recGrid, result.movies);
+    } catch (err) {
+        console.warn('Could not load recommendations:', err);
+        recSection.hidden = true;
+    } finally {
+        recsLoading = false;
     }
 }
 

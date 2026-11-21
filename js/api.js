@@ -106,6 +106,15 @@ export async function discoverByGenre(genreId, page = 1) {
     );
 }
 
+/**
+ * Fetch TMDB recommended movies based on a specific movie ID.
+ * @param {number} movieId - TMDB Movie ID
+ * @param {number} page    - Pagination page
+ */
+export async function getMovieRecommendations(movieId, page = 1) {
+    return fetchJSON(tmdb(`/movie/${movieId}/recommendations`, { page }));
+}
+
 // ── OMDb API Methods ─────────────────────────────────────────
 /**
  * Fetch extended ratings data from OMDb by IMDB ID.

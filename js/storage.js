@@ -68,10 +68,7 @@ export async function syncFromDriveOnLogin() {
         localList.forEach((m) => mergedMap.set(m.id, m)); // Local takes precedence if newer
         const mergedList = Array.from(mergedMap.values());
 
-        try {
-            localStorage.setItem(CONFIG.LS_WATCHLIST, JSON.stringify(mergedList));
-        } catch (e) {}
-        updateBadge();
+        saveWatchlist(mergedList);
         await syncToDriveNow();
     } catch (err) {
         console.error('❌ Failed to sync from Drive:', err);
@@ -104,6 +101,11 @@ function saveWatchlist(list) {
         console.warn('localStorage is restricted in this window:', e);
     }
     triggerCloudSync(); // Automatically syncs to Google Drive
+
+    // Notify components of watchlist change
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cinescope:watchlist-updated', { detail: { list } }));
+    }
 }
 
 
@@ -116,7 +118,13 @@ function saveWatchlist(list) {
 export function addToWatchlist(movie) {
     const list = getWatchlist();
     if (list.find((m) => m.id === movie.id)) return false;
-    list.unshift({ ...movie, _addedAt: Date.now() });
+
+    // Normalize genre_ids (handles both movie.genre_ids array and movie.genres object array)
+    const genre_ids = Array.isArray(movie.genre_ids) && movie.genre_ids.length > 0
+        ? movie.genre_ids
+        : (Array.isArray(movie.genres) ? movie.genres.map((g) => g.id) : []);
+
+    list.unshift({ ...movie, genre_ids, _addedAt: Date.now() });
     saveWatchlist(list);
     updateBadge();
     return true;
