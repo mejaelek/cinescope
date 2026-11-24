@@ -1,0 +1,25 @@
+{
+  "name": "cinescope",
+  "version": "1.0.0",
+  "description": "**Author:** Kamohelo G. Mejaele\r **Course:** WO 2 CSE 499 — Senior Project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mejaelek/cinescope.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mejaelek/cinescope/issues"
+  },
+  "homepage": "https://github.com/mejaelek/cinescope#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6"
+  }
+}
