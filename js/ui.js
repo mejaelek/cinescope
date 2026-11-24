@@ -4,8 +4,8 @@
 // ============================================================
 
 import { CONFIG, GENRE_MAP } from './config.js';
-import { posterUrl, backdropUrl, profileUrl, getMovieDetails, getOmdbRatings } from './api.js';
-import { toggleWatchlist, isInWatchlist, updateBadge } from './storage.js';
+import { posterUrl, backdropUrl, profileUrl, providerLogoUrl, getMovieDetails, getOmdbRatings, getWatchProviders } from './api.js';
+import { toggleWatchlist, isInWatchlist, updateBadge, getUserRegion, setUserRegion } from './storage.js';
 
 // ── Toast Notification ───────────────────────────────────────
 let toastTimer = null;
@@ -218,23 +218,154 @@ export function attachCardEvents(container) {
 
 // ── Movie Detail Modal ───────────────────────────────────────
 
+const COMMON_REGIONS = [
+  { code: 'UY', label: '🇺🇾 Uruguay' },
+  { code: 'US', label: '🇺🇸 United States' },
+  { code: 'AR', label: '🇦🇷 Argentina' },
+  { code: 'ES', label: '🇪🇸 Spain' },
+  { code: 'MX', label: '🇲🇽 Mexico' },
+  { code: 'BR', label: '🇧🇷 Brazil' },
+  { code: 'CL', label: '🇨🇱 Chile' },
+  { code: 'CO', label: '🇨🇴 Colombia' },
+  { code: 'ZA', label: '🇿🇦 South Africa' },
+  { code: 'GB', label: '🇬🇧 United Kingdom' },
+  { code: 'CA', label: '🇨🇦 Canada' },
+  { code: 'DE', label: '🇩🇪 Germany' },
+  { code: 'FR', label: '🇫🇷 France' },
+  { code: 'IT', label: '🇮🇹 Italy' },
+  { code: 'AU', label: '🇦🇺 Australia' },
+];
+
+/**
+ * Render the inner content (Stream, Rent/Buy logos) for a given region.
+ */
+function renderProvidersContent(providersData, activeRegion) {
+  const allResults = providersData?.results || {};
+  const regionData = allResults[activeRegion];
+  const tmdbWatchLink = regionData?.link || `https://www.themoviedb.org/movie/${providersData?.id || ''}/watch`;
+
+  const stream = regionData?.flatrate || [];
+  const rent = regionData?.rent || [];
+  const buy = regionData?.buy || [];
+  const free = regionData?.free || [];
+  const ads = regionData?.ads || [];
+
+  // Combine subscription stream, free, and ad-supported streams deduplicated
+  const streamMap = new Map();
+  [...stream, ...free, ...ads].forEach((p) => {
+    if (p && p.provider_id && !streamMap.has(p.provider_id)) {
+      streamMap.set(p.provider_id, p);
+    }
+  });
+  const streamProviders = Array.from(streamMap.values());
+
+  // Combine rent & buy deduplicated
+  const rentBuyMap = new Map();
+  [...rent, ...buy].forEach((p) => {
+    if (p && p.provider_id && !rentBuyMap.has(p.provider_id)) {
+      rentBuyMap.set(p.provider_id, p);
+    }
+  });
+  const rentBuyProviders = Array.from(rentBuyMap.values());
+
+  const hasAny = streamProviders.length > 0 || rentBuyProviders.length > 0;
+
+  if (!hasAny) {
+    return `
+      <div class="providers-empty-wrap">
+        <p class="providers-empty">Not currently available to stream, rent, or buy in this region.</p>
+        <div class="providers-attribution">
+          <a href="${tmdbWatchLink}" target="_blank" rel="noopener">Check other regions & options on JustWatch ↗</a>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="providers-groups">
+      ${streamProviders.length ? `
+        <div class="provider-type-group">
+          <span class="provider-type-label">Stream</span>
+          <div class="provider-logos-row">
+            ${streamProviders.map((p) => `
+              <a href="${tmdbWatchLink}" target="_blank" rel="noopener" class="provider-logo-card" title="Stream on ${p.provider_name}">
+                <img src="${providerLogoUrl(p.logo_path)}" alt="${p.provider_name}" width="38" height="38" loading="lazy" />
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      ${rentBuyProviders.length ? `
+        <div class="provider-type-group">
+          <span class="provider-type-label">Rent / Buy</span>
+          <div class="provider-logos-row">
+            ${rentBuyProviders.slice(0, 8).map((p) => `
+              <a href="${tmdbWatchLink}" target="_blank" rel="noopener" class="provider-logo-card" title="Rent/Buy on ${p.provider_name}">
+                <img src="${providerLogoUrl(p.logo_path)}" alt="${p.provider_name}" width="38" height="38" loading="lazy" />
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="providers-attribution">
+      <span>Streaming data via JustWatch</span>
+      <a href="${tmdbWatchLink}" target="_blank" rel="noopener">View all on TMDB ↗</a>
+    </div>
+  `;
+}
+
+/**
+ * Build the full Where to Watch HTML block including the region selector.
+ */
+function buildWatchProvidersHtml(providersData, activeRegion) {
+  const availableRegions = [...COMMON_REGIONS];
+  if (activeRegion && !availableRegions.some((r) => r.code === activeRegion)) {
+    availableRegions.unshift({ code: activeRegion, label: `🌐 ${activeRegion}` });
+  }
+
+  return `
+    <div class="watch-providers-container" id="watch-providers-block">
+      <div class="providers-header">
+        <div class="providers-title-wrap">
+          <span class="providers-icon">📺</span>
+          <span class="providers-heading">Where to Watch</span>
+        </div>
+        <select class="region-select" id="provider-region-select" aria-label="Select streaming country">
+          ${availableRegions.map((r) => `
+            <option value="${r.code}" ${r.code === activeRegion ? 'selected' : ''}>${r.label}</option>
+          `).join('')}
+        </select>
+      </div>
+      <div id="providers-content">
+        ${renderProvidersContent(providersData, activeRegion)}
+      </div>
+    </div>
+  `;
+}
+
 /**
  * Fetch full details and render the movie modal.
- * Combines TMDB detailed data + OMDb supplemental ratings.
+ * Combines TMDB detailed data + OMDb supplemental ratings + TMDB watch providers.
  */
 export async function openMovieModal(movieId) {
   // Show loading state
   openModal(`<div style="padding:80px;text-align:center;color:var(--clr-muted)">Loading…</div>`);
 
   try {
-    // Parallel fetch: TMDB details + OMDb supplemental
-    const [movie, omdb] = await Promise.all([
+    // Parallel fetch: TMDB details + Watch Providers
+    const [movie, providersData] = await Promise.all([
       getMovieDetails(movieId),
-      (async () => {
-        const detail = await getMovieDetails(movieId);
-        return getOmdbRatings(detail.imdb_id);
-      })(),
+      getWatchProviders(movieId).catch(() => null),
     ]);
+
+    // OMDb supplemental ratings (using imdb_id from TMDB details)
+    const omdb = movie.imdb_id ? await getOmdbRatings(movie.imdb_id).catch(() => null) : null;
+
+    let activeRegion = getUserRegion();
+    const watchProvidersHtml = buildWatchProvidersHtml(providersData, activeRegion);
 
     const year = movie.release_date?.slice(0, 4) || '';
     const cast = (movie.credits?.cast || []).slice(0, 10);
@@ -301,6 +432,8 @@ export async function openMovieModal(movieId) {
 
         ${ratingsHtml}
 
+        ${watchProvidersHtml}
+
         <p class="modal-overview">${movie.overview || 'No synopsis available.'}</p>
 
         <div class="modal-info-grid">
@@ -336,6 +469,16 @@ export async function openMovieModal(movieId) {
     `;
 
     openModal(html);
+
+    // Watch providers region changer
+    document.getElementById('provider-region-select')?.addEventListener('change', (e) => {
+      activeRegion = e.target.value;
+      setUserRegion(activeRegion);
+      const contentEl = document.getElementById('providers-content');
+      if (contentEl) {
+        contentEl.innerHTML = renderProvidersContent(providersData, activeRegion);
+      }
+    });
 
     // Re-attach watchlist button in modal
     document.getElementById('modal-wl-btn')?.addEventListener('click', (e) => {
