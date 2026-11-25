@@ -8,6 +8,7 @@ import { syncFromDriveOnLogin } from './storage.js';
 import { getWatchlist, removeFromWatchlist, clearWatchlist, updateBadge } from './storage.js';
 import { renderCards, showToast, openMovieModal } from './ui.js';
 import { GENRE_MAP } from './config.js';
+import { openRouletteDialog } from './roulette.js';
 
 // ── DOM ──────────────────────────────────────────────────────
 const watchlistGrid = document.getElementById('watchlist-grid');
@@ -24,6 +25,7 @@ const siteHeader = document.getElementById('site-header');
 const googleBtn = document.getElementById('google-login-btn');
 const googleText = document.getElementById('google-login-text');
 const shareBtn = document.getElementById('share-watchlist-btn');
+const rouletteBtn = document.getElementById('roulette-btn');
 
 function updateGoogleButtonState() {
     if (isGoogleSignedIn()) {
@@ -168,6 +170,10 @@ clearBtn?.addEventListener('click', () => {
         showToast('Watchlist cleared');
         render();
     }
+});
+
+rouletteBtn?.addEventListener('click', () => {
+    openRouletteDialog(watchlistGrid, 'Pick from My Watchlist');
 });
 
 shareBtn?.addEventListener('click', async () => {
