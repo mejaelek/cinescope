@@ -8,7 +8,7 @@ import { getWatchlist, isInWatchlist } from './storage.js';
 import { getMovieRecommendations, discoverByGenre } from './api.js';
 
 /**
- * Generate personalized recommendations using films currently in the user's watchlist.
+ * Generate and update personalized recommendations using films currently in the user's watchlist.
  * 
  * Algorithm:
  * 1. Calculate frequency of genre_ids across the watchlist to find the user's top genre.
