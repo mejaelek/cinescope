@@ -9,6 +9,29 @@ import { GENRE_MAP } from './config.js';
 import { openModal, closeModal, openMovieModal, showToast } from './ui.js';
 
 let isSpinning = false;
+let watchdogTimer = null;
+let activeStepTimer = null;
+
+/**
+ * Safely reset the roulette spinning state, cancel pending timers,
+ * and clean up any lingering visual highlight classes from all cards.
+ */
+export function resetRouletteState() {
+    isSpinning = false;
+    if (watchdogTimer) {
+        clearTimeout(watchdogTimer);
+        watchdogTimer = null;
+    }
+    if (activeStepTimer) {
+        clearTimeout(activeStepTimer);
+        activeStepTimer = null;
+    }
+
+    // Clean up any residual roulette classes across the entire page
+    document.querySelectorAll('.roulette-highlight, .roulette-winner').forEach((el) => {
+        el.classList.remove('roulette-highlight', 'roulette-winner');
+    });
+}
 
 /**
  * Run the card-hopping roulette animation on a grid container.
@@ -17,12 +40,17 @@ let isSpinning = false;
  * @param {Object} [filterOptions]  - { genreId: string|number, minRating: number }
  */
 export async function spinRoulette(gridElement, filterOptions = {}) {
-    if (isSpinning) return;
     if (!gridElement) return;
+
+    // Prevent concurrent overlapping spins
+    if (isSpinning) {
+        return;
+    }
 
     const cards = Array.from(gridElement.querySelectorAll('.movie-card'));
     if (cards.length === 0) {
         showToast('No movies available to pick from!', 'info');
+        resetRouletteState();
         return;
     }
 
@@ -51,27 +79,67 @@ export async function spinRoulette(gridElement, filterOptions = {}) {
 
     if (candidates.length === 0) {
         showToast('No films matched your filter criteria. Try different options!', 'info');
+        resetRouletteState();
         return;
     }
 
-    // Scroll to the first candidate card so the user sees the spin in action
-    candidates[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Lock spinning state
+    isSpinning = true;
 
-    // Single candidate: instant winner
+    // Safety watchdog: guarantee isSpinning automatically unlocks after 8s under any circumstance
+    if (watchdogTimer) clearTimeout(watchdogTimer);
+    watchdogTimer = setTimeout(() => {
+        resetRouletteState();
+    }, 8000);
+
+    // Clean any previous highlights across the page
+    document.querySelectorAll('.roulette-highlight, .roulette-winner').forEach((c) => {
+        c.classList.remove('roulette-highlight', 'roulette-winner');
+    });
+
+    // Smoothly bring the grid container into view once at the start
+    try {
+        gridElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch {
+        // Fallback for older browsers
+    }
+
+    // Single candidate: run a satisfying 3-pulse countdown animation so it visibly animates
     if (candidates.length === 1) {
         const singleCard = candidates[0];
         const singleId = Number(singleCard.dataset.id);
-        singleCard.classList.add('roulette-winner');
-        setTimeout(() => {
-            singleCard.classList.remove('roulette-winner');
-            openMovieModal(singleId);
-        }, 600);
+
+        try {
+            singleCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch {
+            // Ignore scroll errors
+        }
+
+        let pulses = 0;
+        function pulseStep() {
+            singleCard.classList.toggle('roulette-highlight');
+            pulses++;
+
+            if (pulses < 6) {
+                activeStepTimer = setTimeout(pulseStep, 130);
+            } else {
+                singleCard.classList.remove('roulette-highlight');
+                singleCard.classList.add('roulette-winner');
+
+                activeStepTimer = setTimeout(() => {
+                    singleCard.classList.remove('roulette-winner');
+                    isSpinning = false;
+                    if (watchdogTimer) clearTimeout(watchdogTimer);
+                    openMovieModal(singleId);
+                }, 700);
+            }
+        }
+
+        pulseStep();
         return;
     }
 
-    isSpinning = true;
-
-    // Pick random target winner
+    // Pick random target winner from candidates
     const winningCandidateIndex = Math.floor(Math.random() * candidates.length);
     const winningCard = candidates[winningCandidateIndex];
     const winningMovieId = Number(winningCard.dataset.id);
@@ -84,40 +152,54 @@ export async function spinRoulette(gridElement, filterOptions = {}) {
     let currentIndex = 0;
     let delay = 50; // Initial rapid speed (50ms)
 
-    // Clear any previous highlights
-    cards.forEach((c) => c.classList.remove('roulette-highlight', 'roulette-winner'));
-
     function step() {
-        // Remove highlight from all candidates
-        candidates.forEach((c) => c.classList.remove('roulette-highlight'));
+        try {
+            // Remove highlight from all candidates
+            candidates.forEach((c) => c.classList.remove('roulette-highlight'));
 
-        // Highlight active candidate
-        const activeCard = candidates[currentIndex % candidates.length];
-        activeCard.classList.add('roulette-highlight');
-        activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            // Highlight active candidate
+            const activeCard = candidates[currentIndex % candidates.length];
+            if (activeCard) {
+                activeCard.classList.add('roulette-highlight');
+            }
 
-        currentHop++;
-        currentIndex++;
+            currentHop++;
+            currentIndex++;
 
-        if (currentHop >= totalHops) {
-            // Reached winner!
-            activeCard.classList.remove('roulette-highlight');
-            activeCard.classList.add('roulette-winner');
+            if (currentHop >= totalHops) {
+                // Reached winner!
+                candidates.forEach((c) => c.classList.remove('roulette-highlight'));
 
-            setTimeout(() => {
-                activeCard.classList.remove('roulette-winner');
-                isSpinning = false;
-                openMovieModal(winningMovieId);
-            }, 750);
-            return;
+                if (winningCard) {
+                    winningCard.classList.add('roulette-winner');
+                    try {
+                        winningCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } catch {
+                        // Ignore scroll errors
+                    }
+                }
+
+                activeStepTimer = setTimeout(() => {
+                    if (winningCard) {
+                        winningCard.classList.remove('roulette-winner');
+                    }
+                    isSpinning = false;
+                    if (watchdogTimer) clearTimeout(watchdogTimer);
+                    openMovieModal(winningMovieId);
+                }, 750);
+                return;
+            }
+
+            // Exponential deceleration curve: slow down across the final 45% of hops
+            if (currentHop > totalHops * 0.55) {
+                delay = Math.min(500, Math.floor(delay * 1.14));
+            }
+
+            activeStepTimer = setTimeout(step, delay);
+        } catch (err) {
+            console.error('Roulette step error:', err);
+            resetRouletteState();
         }
-
-        // Exponential deceleration curve: slow down across the final 45% of hops
-        if (currentHop > totalHops * 0.55) {
-            delay = Math.min(500, Math.floor(delay * 1.14));
-        }
-
-        setTimeout(step, delay);
     }
 
     step();
@@ -130,7 +212,11 @@ export async function spinRoulette(gridElement, filterOptions = {}) {
  * @param {string} [title]          - Dialog heading title
  */
 export function openRouletteDialog(gridElement, title = 'Movie Night Picker') {
-    if (isSpinning) return;
+    // If a spin is actively running on the cards, do not interrupt it
+    if (isSpinning) {
+        return;
+    }
+
     if (!gridElement) return;
 
     const cards = Array.from(gridElement.querySelectorAll('.movie-card'));
@@ -195,10 +281,16 @@ export function openRouletteDialog(gridElement, title = 'Movie Night Picker') {
     // Cancel action
     document.getElementById('roulette-dialog-cancel')?.addEventListener('click', () => {
         closeModal();
+        resetRouletteState();
     });
 
     // Spin action
-    document.getElementById('roulette-spin-submit')?.addEventListener('click', () => {
+    document.getElementById('roulette-spin-submit')?.addEventListener('click', (e) => {
+        const submitBtn = e.currentTarget;
+        if (submitBtn.disabled) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '🎲 Spinning…';
+
         const genreId = document.getElementById('roulette-genre-select')?.value || 'all';
         const minRating = parseFloat(document.getElementById('roulette-rating-select')?.value || '0');
 
