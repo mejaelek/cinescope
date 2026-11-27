@@ -165,7 +165,16 @@ cinescope/
 - User accounts with a cloud-synced watchlist
 - Light/dark theme toggle
 
-## Acknowledgements
+## Contributing
+
+Our team works on CineScope through GitHub pull requests:
+
+1. Create a feature branch from `main` (for example `fc-whatsapp-share`).
+2. Make your changes and commit with a clear message.
+3. Open a pull request and ask a teammate to review it.
+4. Merge into `main` once it is reviewed and the checks pass.
+
+Please pull the latest `main` before you start, so your work builds on your teammates' changes.## Acknowledgements
 
 Film data provided by [TMDB](https://www.themoviedb.org/) and [OMDb](https://www.omdbapi.com/). This product uses the TMDB API but is not endorsed or certified by TMDB.
 
