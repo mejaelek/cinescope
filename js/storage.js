@@ -243,6 +243,40 @@ export function setPref(key, value) {
     }
 }
 
+// ── Streaming Region Preference ──────────────────────────────
+
+/**
+ * Detect user country code (ISO 3166-1 alpha-2).
+ * Priority: 1. User saved preference -> 2. Browser locale -> 3. Fallback ('US')
+ * @returns {string} Two-letter uppercase country code (e.g. 'UY', 'US')
+ */
+export function getUserRegion() {
+    try {
+        const saved = getPref('user_region');
+        if (saved && typeof saved === 'string' && saved.length === 2) {
+            return saved.toUpperCase();
+        }
+
+        // Extracts country from "es-UY", "en-US", "en-ZA", etc.
+        const navLang = typeof navigator !== 'undefined' ? (navigator.language || '') : '';
+        if (navLang.includes('-')) {
+            const country = navLang.split('-')[1].toUpperCase();
+            if (country.length === 2) return country;
+        }
+    } catch {}
+    return 'US';
+}
+
+/**
+ * Save user preferred region.
+ * @param {string} region - Two-letter uppercase country code (e.g. 'UY')
+ */
+export function setUserRegion(region) {
+    if (region && typeof region === 'string') {
+        setPref('user_region', region.toUpperCase());
+    }
+}
+
 // ── Badge Helper ─────────────────────────────────────────────
 
 /**

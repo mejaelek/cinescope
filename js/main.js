@@ -11,6 +11,7 @@ import { getTrending, getNowPlaying, getGenres, discoverByGenre, backdropUrl, po
 import { renderCards, showToast, openMovieModal, initScrollReveal } from './ui.js';
 import { toggleWatchlist, isInWatchlist, updateBadge } from './storage.js';
 import { getPersonalizedRecommendations } from './recommendations.js';
+import { openRouletteDialog } from './roulette.js';
 
 
 // ── State ────────────────────────────────────────────────────
@@ -28,6 +29,7 @@ const state = {
 const movieGrid = document.getElementById('movie-grid');
 const genreFilters = document.getElementById('genre-filters');
 const sortSelect = document.getElementById('sort-select');
+const homeRouletteBtn = document.getElementById('home-roulette-btn');
 const loadMoreBtn = document.getElementById('load-more-btn');
 const filmStrip = document.getElementById('film-strip');
 const quoteText = document.getElementById('quote-text');
@@ -271,6 +273,10 @@ genreFilters?.addEventListener('click', (e) => {
 sortSelect?.addEventListener('change', () => {
     state.sortOrder = sortSelect.value;
     applyFiltersAndSort();
+});
+
+homeRouletteBtn?.addEventListener('click', () => {
+    openRouletteDialog(movieGrid, 'Pick a Trending Film');
 });
 
 // ── Filter + Sort + Render ───────────────────────────────────

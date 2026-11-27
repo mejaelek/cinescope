@@ -40,6 +40,10 @@ export const profileUrl = (path) => path
     ? `${CONFIG.TMDB_IMG_BASE}/${CONFIG.TMDB_PROFILE}${path}`
     : 'https://via.placeholder.com/185x278/1c1c28/888888?text=?';
 
+export const providerLogoUrl = (path, size = 'w92') => path
+    ? `${CONFIG.TMDB_IMG_BASE}/${size}${path}`
+    : '';
+
 // ── TMDB API Methods ─────────────────────────────────────────
 
 /**
@@ -113,6 +117,14 @@ export async function discoverByGenre(genreId, page = 1) {
  */
 export async function getMovieRecommendations(movieId, page = 1) {
     return fetchJSON(tmdb(`/movie/${movieId}/recommendations`, { page }));
+}
+
+/**
+ * Fetch streaming, rental, and buy provider availability per country (TMDB Watch Providers).
+ * @param {number} movieId - TMDB Movie ID
+ */
+export async function getWatchProviders(movieId) {
+    return fetchJSON(tmdb(`/movie/${movieId}/watch/providers`));
 }
 
 // ── OMDb API Methods ─────────────────────────────────────────
